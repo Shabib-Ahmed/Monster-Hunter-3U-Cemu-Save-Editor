@@ -2,7 +2,7 @@ def getEquipmentFromHex(byte1,byte2,byte3):
     return equipmentHextoString[(byte1,byte2,byte3)]
 
 def getEquipmentFromName(equipmentName):
-    return equipmentStringtoHex[itemName]
+    return equipmentStringtoHex[equipmentName]
 
 equipmentStringtoHex ={
     'None':(0,0,0),

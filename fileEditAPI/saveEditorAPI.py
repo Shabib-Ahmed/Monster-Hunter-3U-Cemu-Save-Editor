@@ -2,16 +2,18 @@ from data.globalData import *
 from data.itemCodes import *
 from data.equipmentCodes import *
 
+currentFilePath = None
+
 def openSaveFile(fileName):
-    global saveFileData
+    global saveFileData, currentFilePath
+    currentFilePath = fileName
     with open(fileName,"rb") as f:
         data = f.read()
     saveFileData = bytearray(data)
 
 def saveSaveFile(fileName):
-    f = open(fileName, "wb")
-    f.write(saveFileData)
-    f.close()
+    with open(fileName, "wb") as f:
+        f.write(saveFileData)
 
 def changePlayerName(changedName):
     global saveFileData
@@ -27,7 +29,7 @@ def changePlayerName(changedName):
 
 def getPlayerName():
     name = saveFileData[nameOffset:nameOffset + 10]
-    return name.decode()
+    return name.decode().rstrip('\x00')
 
 
 def getEquipmentList(pageNumber):
@@ -56,11 +58,11 @@ def changeItem(itemLocation, itemName, itemQuantity):
     saveFileData[offset + 3] = itemQuantity
     
 def getZennyAmount():
-    return int.from_bytes(saveFileData[zennyOffset].to_bytes() + saveFileData[zennyOffset + 1].to_bytes() + saveFileData[zennyOffset + 2].to_bytes())
+    return int.from_bytes(saveFileData[zennyOffset:zennyOffset + 3], byteorder='big')
 
 def changeZennyAmount(value):
     global saveFileData
-    valueBytes = bytearray(value.to_bytes(3))
+    valueBytes = value.to_bytes(3, byteorder='big')
     offset = zennyOffset
     for i in valueBytes:
         saveFileData[offset] = i
