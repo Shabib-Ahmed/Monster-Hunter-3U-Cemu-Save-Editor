@@ -17,7 +17,7 @@ A desktop save file editor for **Monster Hunter 3 Ultimate (MH3U)**, built with 
 ## Installation
 
 ```bash
-git clone https://github.com/your-username/mh3u-save-editor.git
+git clone https://github.com/shabib-ahmed/mh3u-save-editor.git
 cd mh3u-save-editor
 ```
 
