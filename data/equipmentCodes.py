@@ -1,8 +1,11 @@
-def getEquipmentFromHex(byte1,byte2,byte3):
-    return equipmentHextoString[(byte1,byte2,byte3)]
+def getEquipmentFromHex(byte1, byte2, byte3):
+    return equipmentHextoString[(byte1, byte2, byte3)]
 
 def getEquipmentFromName(equipmentName):
     return equipmentStringtoHex[equipmentName]
+
+def getEquipmentListNames():
+    return list(equipmentStringtoHex.keys())
 
 equipmentStringtoHex ={
     'None':(0,0,0),
@@ -6060,3 +6063,5 @@ equipmentHextoString = {
     (6,0,10):'Creator Talisman'
 
 }
+
+equipmentHextoString = {v: k for k, v in equipmentStringtoHex.items()}

@@ -2,6 +2,7 @@ from fileEditAPI.saveEditorAPI import *
 import fileEditAPI.saveEditorAPI as api
 import tkinter as tk
 import tkinter.filedialog
+import tkinter.messagebox
 from tkinter import ttk
 from tkinter import Toplevel, Label, Button
 
@@ -12,8 +13,8 @@ class saveEditor(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('MH3U Save File Editor')
-        self.geometry("500x300")
-        self.minsize(500,300)
+        self.geometry("500x350")
+        self.minsize(500, 350)
         self.fileMenu = fileMenu(self)
         self.notebook = notebook(self)
         self.mainloop()
@@ -26,7 +27,7 @@ class fileMenu(tk.Menu):
         self.add_cascade(label='File', menu=fileMenu) 
         fileMenu.add_command(label='Open File', command=self.openFile) 
         fileMenu.add_command(label='Save File', command=self.saveFile) 
-        fileMenu.add_command(label='Save As...', command=self.saveFileAs) 
+        fileMenu.add_command(label='Save As...', command=self.saveFileAs)
         parent.config(menu=self)
         
     def openFile(self):
@@ -43,7 +44,7 @@ class fileMenu(tk.Menu):
     def saveFile(self):
         if api.currentFilePath:
             saveSaveFile(api.currentFilePath)
-            tk.messagebox.showinfo("Success", "Save file updated successfully!")
+            tk.messagebox.showinfo("Success", "Save file overwritten successfully!")
         else:
             self.saveFileAs()
 
@@ -52,8 +53,7 @@ class fileMenu(tk.Menu):
         if filePath:
             saveSaveFile(filePath)
             api.currentFilePath = filePath
-            tk.messagebox.showinfo("Success", "New save file written successfully!")
-        
+            tk.messagebox.showinfo("Success", "New save written successfully!")
         
 class notebook(ttk.Notebook):
     def __init__(self, parent):
@@ -80,12 +80,12 @@ class playerInfoTab(ttk.Frame):
         self.label2 = Label(self, text='Zenny Amount')
         self.playerNameEntry = tk.Entry(self)
         self.zennyEntry = tk.Entry(self)
-        self.label1.grid(row=0, column=0, pady=2)
-        self.label2.grid(row=1, column=0, pady=2)
-        self.playerNameEntry.grid(row=0, column=1, pady=2)
-        self.zennyEntry.grid(row=1, column=1, pady=2)
-        self.submitButton = Button(self, text="Change", command=self.changePlayerInfo)
-        self.submitButton.grid(row=2, column=0)
+        self.label1.grid(row=0, column=0, pady=5, padx=5)
+        self.label2.grid(row=1, column=0, pady=5, padx=5)
+        self.playerNameEntry.grid(row=0, column=1, pady=5, padx=5)
+        self.zennyEntry.grid(row=1, column=1, pady=5, padx=5)
+        self.submitButton = Button(self, text="Change Data", command=self.changePlayerInfo)
+        self.submitButton.grid(row=2, column=1, pady=5)
         parent.add(self, text='Player Info')
     
     def updatePlayerTab(self):
@@ -95,9 +95,12 @@ class playerInfoTab(ttk.Frame):
         self.zennyEntry.insert(0, str(getZennyAmount()))
     
     def changePlayerInfo(self):
-        changePlayerName(str(self.playerNameEntry.get()))
-        changeZennyAmount(int(self.zennyEntry.get()))
-        tk.messagebox.showinfo("Success", "Player changes applied to buffer!")
+        try:
+            changePlayerName(str(self.playerNameEntry.get()))
+            changeZennyAmount(int(self.zennyEntry.get()))
+            tk.messagebox.showinfo("Success", "Changes successfully buffered into memory.")
+        except ValueError:
+            tk.messagebox.showerror("Error", "Invalid format entered for Zenny Amount.")
 
 class itemBoxListTab(ttk.Frame):
     boxPageNumber = 0
@@ -108,14 +111,14 @@ class itemBoxListTab(ttk.Frame):
         self.itemBoxTree.pack(expand=1, fill="both")
         self.itemBoxTree.column("c1", anchor=tk.CENTER, width=80)
         self.itemBoxTree.heading("c1", text="Item Number")
-        self.itemBoxTree.column("c2", anchor=tk.W, width=80)
-        self.itemBoxTree.heading("c2", text="Item")
+        self.itemBoxTree.column("c2", anchor=tk.W, width=150)
+        self.itemBoxTree.heading("c2", text="Item Name")
         self.itemBoxTree.column("c3", anchor=tk.W, width=80)
         self.itemBoxTree.heading("c3", text="Quantity")
         
-        self.boxNumber = ttk.Combobox(self, values=list(range(1,11)))
+        self.boxNumber = ttk.Combobox(self, values=list(range(1, 11)))
         self.boxNumber.current(self.boxPageNumber)
-        self.boxNumber.pack()
+        self.boxNumber.pack(pady=5)
         self.boxNumber.bind('<<ComboboxSelected>>', self.changePage)
         self.itemBoxTree.bind('<Double-Button-1>', self.modifyItem)
 
@@ -137,28 +140,26 @@ class itemBoxListTab(ttk.Frame):
     
     def modifyItem(self, a):
         self.top = Toplevel(self.parent.parent)
+        self.top.title("Modify Item")
         self.top.geometry("+%d+%d" % (self.parent.parent.winfo_x()+100, self.parent.parent.winfo_y()+100))
         self.curItem = self.itemBoxTree.focus()
         if not self.curItem: return
         
-        self.label1 = Label(self.top, text='Choose Item')
-        self.label2 = Label(self.top, text='Choose Quantity')
-        self.label1.grid(row=0, column=0, pady=2)
-        self.label2.grid(row=1, column=0, pady=2)
+        Label(self.top, text='Choose Item').grid(row=0, column=0, pady=5, padx=5)
+        Label(self.top, text='Choose Quantity').grid(row=1, column=0, pady=5, padx=5)
 
-        self.itemEntry = ttk.Combobox(self.top, values=getItemListNames())
+        self.itemEntry = ttk.Combobox(self.top, values=getItemListNames(), width=25)
         try:
             self.itemEntry.current(getItemListNames().index(self.itemBoxTree.item(self.curItem)['values'][1]))
         except ValueError:
             self.itemEntry.current(0)
-        self.itemEntry.grid(row=0, column=1, pady=2)
+        self.itemEntry.grid(row=0, column=1, pady=5, padx=5)
 
         self.quantityEntry = ttk.Combobox(self.top, values=list(range(100)))
         self.quantityEntry.current(int(self.itemBoxTree.item(self.curItem)['values'][2]))
-        self.quantityEntry.grid(row=1, column=1, pady=2)
+        self.quantityEntry.grid(row=1, column=1, pady=5, padx=5)
 
-        self.button = Button(self.top, text="Ok", command=lambda: self.itemBoxSubmit(self.top, self.quantityEntry, self.itemEntry, self.curItem))
-        self.button.grid(row=2, column=1, pady=2)
+        Button(self.top, text="Confirm", command=lambda: self.itemBoxSubmit(self.top, self.quantityEntry, self.itemEntry, self.curItem)).grid(row=2, column=1, pady=5)
     
     def itemBoxSubmit(self, top, quantityEntry, itemEntry, curItem):
         self.index = self.itemBoxTree.item(curItem)['values'][0]-1
@@ -168,7 +169,7 @@ class itemBoxListTab(ttk.Frame):
         self.itemBoxTree.item(self.curItem, values=(self.itemBoxTree.item(self.curItem)['values'][0], chosenItem, chosenQuantity))
         itemListUI[self.index % 100] = (chosenItem, chosenQuantity)
         changeItem(self.index, chosenItem, chosenQuantity)
-        self.top.destroy()
+        top.destroy()
     
 class equipmentBoxListTab(ttk.Frame):
     boxPageNumber = 0
@@ -177,15 +178,17 @@ class equipmentBoxListTab(ttk.Frame):
         self.parent = parent
         self.equipmentBoxTree = ttk.Treeview(self, column=('c1','c2'), show='headings', height=5)
         self.equipmentBoxTree.pack(expand=1, fill="both")
-        self.equipmentBoxTree.column("c1", anchor=tk.CENTER, width=80)
+        self.equipmentBoxTree.column("c1", anchor=tk.CENTER, width=120)
         self.equipmentBoxTree.heading("c1", text="Equipment Number")
-        self.equipmentBoxTree.column("c2", anchor=tk.W, width=80)
-        self.equipmentBoxTree.heading("c2", text="Equipment")
+        self.equipmentBoxTree.column("c2", anchor=tk.W, width=200)
+        self.equipmentBoxTree.heading("c2", text="Equipment Name")
         
-        self.boxNumber = ttk.Combobox(self, values=list(range(1,11)))
+        self.boxNumber = ttk.Combobox(self, values=list(range(1, 11)))
         self.boxNumber.current(self.boxPageNumber)
-        self.boxNumber.pack()
+        self.boxNumber.pack(pady=5)
         self.boxNumber.bind('<<ComboboxSelected>>', self.changePage)
+        
+        self.equipmentBoxTree.bind('<Double-Button-1>', self.modifyEquipment)
 
         parent.add(self, text='Equipment Box List')
         
@@ -202,5 +205,35 @@ class equipmentBoxListTab(ttk.Frame):
         for i in equipmentListUI:
             self.equipmentBoxTree.insert('', 'end', values=(index, i))
             index = index + 1
+
+    def modifyEquipment(self, a):
+        self.top = Toplevel(self.parent.parent)
+        self.top.title("Modify Equipment")
+        self.top.geometry("+%d+%d" % (self.parent.parent.winfo_x()+100, self.parent.parent.winfo_y()+100))
+        self.curEquipment = self.equipmentBoxTree.focus()
+        if not self.curEquipment: return
+
+        Label(self.top, text='Select Equipment Piece:').grid(row=0, column=0, pady=5, padx=5)
+        self.equipmentEntry = ttk.Combobox(self.top, values=getEquipmentListNames(), width=30)
         
-saveEditor()
+        try:
+            self.equipmentEntry.current(getEquipmentListNames().index(self.equipmentBoxTree.item(self.curEquipment)['values'][1]))
+        except ValueError:
+            self.equipmentEntry.current(0)
+            
+        self.equipmentEntry.grid(row=0, column=1, pady=5, padx=5)
+        
+        Button(self.top, text="Confirm", command=lambda: self.equipmentBoxSubmit(self.top, self.equipmentEntry, self.curEquipment)).grid(row=1, column=1, pady=5)
+
+    def equipmentBoxSubmit(self, top, equipmentEntry, curEquipment):
+        # ADDED: Applies mutations back to memory tree and file buffers
+        self.index = self.equipmentBoxTree.item(curEquipment)['values'][0]-1
+        chosenEquipment = getEquipmentListNames()[self.equipmentEntry.current()]
+        
+        self.equipmentBoxTree.item(self.curEquipment, values=(self.equipmentBoxTree.item(self.curEquipment)['values'][0], chosenEquipment))
+        equipmentListUI[self.index % 100] = chosenEquipment
+        changeEquipment(self.index, chosenEquipment)
+        top.destroy()
+        
+if __name__ == '__main__':
+    saveEditor()
